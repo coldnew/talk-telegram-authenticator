@@ -24,6 +24,7 @@
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="theme/slide.css"/>
 #+HTML_HEAD: <script src="js/jquery-1.7.1.min.js"> </script>
 #+HTML_HEAD: <script src="theme/app.js"></script>
+#+HTML_HEAD: <script src="theme/ga.js"></script>
 
 * The Idea
   :PROPERTIES:
