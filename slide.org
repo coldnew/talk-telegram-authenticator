@@ -1,0 +1,519 @@
+#+TITLE: telegram authenticator
+#+SUBTITLE:
+#+DATE: 2016/09/13（二）16:30
+#+AUTHOR: Yen-Chin, Lee <coldnew>
+#+EMAIL: coldnew.tw@gmail.com
+#+OPTIONS: ':nil *:t -:t ::t <:t H:3 \n:nil ^:nil arch:headline
+#+OPTIONS: author:t c:nil creator:comment d:(not "LOGBOOK") date:t
+#+OPTIONS: e:t email:nil f:t inline:t num:nil p:nil pri:nil stat:t
+#+OPTIONS: tags:t tasks:t tex:t timestamp:t toc:nil todo:t |:t
+#+CREATOR: Emacs 24.4.1 (Org mode 8.2.10)
+#+DESCRIPTION:
+#+EXCLUDE_TAGS: noexport
+#+KEYWORDS:
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+#+USE_PRETTIFY: false
+
+#+ICON: images/telegram-icon.png
+#+FAVICON: images/telegram-icon.png
+#+WWW: https://coldnew.github.io
+#+GITHUB: http://github.com/coldnew
+
+# Extra CSS file
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="theme/slide.css"/>
+#+HTML_HEAD: <script src="js/jquery-1.7.1.min.js"> </script>
+#+HTML_HEAD: <script src="theme/app.js"></script>
+
+* The Idea
+  :PROPERTIES:
+  :SLIDE:    segue dark quote
+  :ASIDE:    right bottom
+  :ARTICLE:  flexbox vleft auto-fadein
+  :END:
+
+  Why I implement this application.
+
+** Traditional way to connect to SSH server
+
+   #+BEGIN_EXAMPLE
+     coldnew@gentoo ~ $ ssh coldnew@192.168.20.100
+     The authenticity of host '192.168.20.100 (192.168.20.100)' can't be established.
+     ECDSA key fingerprint is SHA256:izC+HeDEm/u1FcCzpM+aBgpbuGlrGD1HkMnwLVkS+ac.
+     Are you sure you want to continue connecting (yes/no)? yes
+     Warning: Permanently added '192.168.20.100' (ECDSA) to the list of known hosts.
+     Password:
+   #+END_EXAMPLE
+
+** Connect to SSH server without password
+
+   - You can use =ssh-copy-id= to make ssh without password
+
+     #+BEGIN_EXAMPLE
+       coldnew@gentoo ~ $ ssh-copy-id ~/.ssh/id_rsa.pub coldnew@192.168.20.100
+       Password:
+     #+END_EXAMPLE
+
+   - Now it's no need to type any password to login
+
+     #+BEGIN_EXAMPLE
+       coldnew@gentoo ~ $ ssh coldnew@192.168.20.100
+       Warning: Permanently added '192.168.20.100' (ECDSA) to the list of known hosts.
+       coldnew@pc ~ $
+     #+END_EXAMPLE
+
+** Use password vs without password
+
+   - password
+
+     + Your server may not be secure
+
+     + Brute force attack
+
+   + without password
+
+     + You need to setup key first to let user login
+
+     + System may be not easy to mantain but more secure
+
+** The Soultion: Google Authenticator
+
+   #+BEGIN_CENTER
+   #+ATTR_HTML: :width 80%
+   [[file:images/g2fa-auth-setup.gif]]
+   #+END_CENTER
+
+* But...
+  :PROPERTIES:
+  :SLIDE:    segue dark quote
+  :ASIDE:    right bottom
+  :ARTICLE:  flexbox vleft auto-fadein
+  :END:
+
+  What if we don't trust Google ?
+
+** Google said: Don't be evil
+
+   #+BEGIN_CENTER
+   [[file:images/Dontbeevil.jpg]]
+   #+END_CENTER
+
+** Eat you own dogfood
+
+   #+BEGIN_CENTER
+   #+ATTR_HTML: :width 40%
+   [[file:images/eat.jpg]]
+   #+END_CENTER
+
+** Here's what I have done
+
+   #+BEGIN_CENTER
+   #+ATTR_HTML: :width 90%
+   [[file:images/ssh1.png]]
+   #+END_CENTER
+
+* So...
+  :PROPERTIES:
+  :SLIDE:    segue dark quote
+  :ASIDE:    right bottom
+  :ARTICLE:  flexbox vleft auto-fadein
+  :END:
+
+  Let's talk about telegram-authenticator
+
+** What's telegram ?
+
+   - Is a brand new instant-messanger application
+
+   - Client is open source, but server isn't
+
+     #+BEGIN_CENTER
+     #+ATTR_HTML: :width 60%
+     [[file:images/stats-msg-tg.jpg]]
+     #+END_CENTER
+
+** Telegram support BOT
+
+   #+BEGIN_CENTER
+   #+ATTR_HTML: :width 70%
+   [[file:images/tbot.png]]
+   #+END_CENTER
+* How to create telegram bot ?
+  :PROPERTIES:
+  :SLIDE:    segue dark quote
+  :ASIDE:    right bottom
+  :ARTICLE:  flexbox vleft auto-fadein
+  :END:
+
+** Add botfather to your channel
+
+   #+ATTR_HTML: :width 50%
+   [[file:images/b1.png]]
+
+** Use commands to control your own bot
+
+   #+ATTR_HTML: :width 50%
+   [[file:images/b2.png]]
+
+** Create new bot
+
+   #+ATTR_HTML: :width 50%
+   [[file:images/b3.png]]
+
+** Create new bot
+
+   #+ATTR_HTML: :width 50%
+   [[file:images/b4.png]]
+
+** Now we know our bot token
+
+   #+BEGIN_EXAMPLE
+     239551761:AAFRfD7iN-YTC1o5od8y0IMnFbg-fWdkG4I
+   #+END_EXAMPLE
+
+* A simple guide on botAPI
+  :PROPERTIES:
+  :SLIDE:    segue dark quote
+  :ASIDE:    right bottom
+  :ARTICLE:  flexbox vleft auto-fadein
+  :END:
+
+  And you'll know how to write a bot
+
+** Telegram's botAPI
+
+   - All list in this page
+
+     https://core.telegram.org/bots/api
+
+   - We only talk about how to fetch/send message here
+
+   - Before this, add bot to your channel
+
+** Add bot to channel
+
+   #+ATTR_HTML: :width 50%
+   [[file:images/b5.png]]
+
+** Add bot to channel
+
+   #+ATTR_HTML: :width 50%
+   [[file:images/b6.png]]
+
+** Add bot to channel
+
+   #+ATTR_HTML: :width 50%
+   [[file:images/b7.png]]
+
+** Getting updates
+
+   - You cant get update from
+
+  #+BEGIN_SRC sh
+     https://api.telegram.org/bot${TOKEN}/getUpdates
+  #+END_SRC
+
+  - So... our bot token is
+
+  #+BEGIN_EXAMPLE
+      239551761:AAFRfD7iN-YTC1o5od8y0IMnFbg-fWdkG4I
+  #+END_EXAMPLE
+
+  - And the bot message can get from
+
+  #+BEGIN_EXAMPLE
+  https://api.telegram.org/bot239551761:AAFRfD7iN-YTC1o5od8y0IMnFbg-fWdkG4I/getUpdates
+  #+END_EXAMPLE
+
+** Here's what we get after you type something
+
+   #+BEGIN_SRC json
+     { "ok":true,
+        "result":[ {
+              "update_id":556578430,
+              "message":{
+                 "message_id":2,
+                 "from":{
+                    "id":81660412,
+                    "first_name":"Yen-Chin",
+                    "last_name":"Lee",
+                    "username":"coldnew" },
+                 "chat":{
+                    "id":81660412,
+                    "first_name":"Yen-Chin",
+                    "last_name":"Lee",
+                    "username":"coldnew",
+                    "type":"private" },   "date":1473738006,  "text":"test" } }, ] }
+   #+END_SRC
+
+** The chat_id is the room id
+
+   - chat_id: =8166042=
+
+   #+BEGIN_SRC json
+     {"update_id":556578430,
+      "message":{
+          "message_id":2,
+          "from":{
+              "id":81660412,
+              "first_name":"Yen-Chin",
+              "last_name":"Lee",
+              "username":"coldnew" },
+          "chat":{
+              "id":81660412,
+              "first_name":"Yen-Chin",
+              "last_name":"Lee",
+              "username":"coldnew",
+              "type":"private" },   "date":1473738006,  "text":"test" } }
+   #+END_SRC
+** Send message to bot channel
+
+   - Now you find the chat_id, you can send message to specific channel
+
+   - Use following url to do it
+
+   #+BEGIN_SRC sh
+     https://api.telegram.org/bot${TOKEN}/sendMessage
+   #+END_SRC
+
+   - So... in this example, we has this url
+
+   #+BEGIN_EXAMPLE
+    https://api.telegram.org/bot239551761:AAFRfD7iN-YTC1o5od8y0IMnFbg-fWdkG4I/sendMessage
+   #+END_EXAMPLE
+
+   - You need to add parameter to specify chat_id and text
+
+   #+BEGIN_SRC json
+     {"chat_id": "81660412",
+      "text": "Hello telegram bot"}
+   #+END_SRC
+
+** Let's try it with curl command
+
+   #+BEGIN_SRC sh
+     curl -s \
+          -X POST \
+          https://api.telegram.org/bot239551761:AAFRfD7iN-YTC1o5od8y0IMnFbg-fWdkG4I/sendMessage \
+          -d text="Hello telegram bot" \
+          -d chat_id=81660412
+   #+END_SRC
+
+   #+ATTR_HTML: :width 30%
+   [[file:images/tx1.png]]
+* Writing pam_module
+  :PROPERTIES:
+  :SLIDE:    segue dark quote
+  :ASIDE:    right bottom
+  :ARTICLE:  flexbox vleft auto-fadein
+  :END:
+
+** What's pam ?
+
+   - PAM (Pluggable Authentication Modules)
+
+   - Use for user authentication in any modern linux distribution
+
+     #+HTML: <br>
+
+   - For more info on how to write pam_module, please see
+
+     - [[http://www.linux-pam.org/Linux-PAM-html/Linux-PAM_MWG.html][The Linux-PAM Module Writers' Guide]]
+
+** A simple hello world example
+  :PROPERTIES:
+  :ARTICLE:  smaller
+  :END:
+
+   - pam_hello.c
+
+   #+BEGIN_SRC c
+     #include <stdio.h>
+     #include <stdlib.h>
+     #include <syslog.h>
+     #include <security/pam_modules.h>
+     #include <security/pam_ext.h>
+
+     PAM_EXTERN int pam_sm_authenticate(pam_handle_t* pamh, int flags, int argc,
+                                        char const** argv) {
+             pam_info(pamh, "Hello there!!");
+             return PAM_IGNORE;
+     }
+
+     PAM_EXTERN int pam_sm_setcred(pam_handle_t* pamh, int flags, int argc,
+                                   char const** argv) {
+             return PAM_SUCCESS;
+     }
+   #+END_SRC
+
+   - Compile with
+
+   #+BEGIN_EXAMPLE
+       gcc pam_hello.c -fPIC -lpam -shared -o pam_hello.so
+   #+END_EXAMPLE
+
+** Move the pam_hello.so to it's place
+
+   - In my system, it's /lib/security
+
+     #+BEGIN_EXAMPLE
+       sudo mv pam_hello.so /lib/security/
+     #+END_EXAMPLE
+
+   - Modify =/etc/pam.d/sshd=
+
+     #+BEGIN_EXAMPLE
+       auth       required     pam_hello.so
+     #+END_EXAMPLE
+
+   - Modify =/etc/ssh/sshd_config=
+
+     #+BEGIN_EXAMPLE
+       ChallengeResponseAuthentication yes
+     #+END_EXAMPLE
+
+** Now, let's test it
+
+   - Remember to restart sshd first
+
+     #+BEGIN_EXAMPLE
+       sudo systemctl rstart sshd
+     #+END_EXAMPLE
+
+   - Test ssh login
+
+     #+BEGIN_EXAMPLE
+       coldnew@pc ~ $ ssh coldnew@192.168.20.100
+       Password:
+       Hello there!!
+       coldnew@gentoo ~ $
+     #+END_EXAMPLE
+* The Project
+  :PROPERTIES:
+  :SLIDE:    segue dark quote
+  :ASIDE:    right bottom
+  :ARTICLE:  flexbox vleft auto-fadein
+  :END:
+
+  telegram-authenticator
+
+** It's in alpha but almost worked
+
+   - GitHub: https://github.com/coldnew/telegram-authenticator
+
+   - Need to update the documentation
+
+   - All codes write in =C=
+
+** How to use it
+
+   - Installed it like what we installed pam_hello.so
+
+   - Move the lib to /lib/security
+
+     #+BEGIN_EXAMPLE
+       sudo mv pam_telegram_authenticator.so /lib/security/
+     #+END_EXAMPLE
+
+   - Modify =/etc/pam.d/sshd=
+
+     #+BEGIN_EXAMPLE
+       auth       required     pam_telegram_authenticator.so
+     #+END_EXAMPLE
+
+   - Modify =/etc/ssh/sshd_config=
+
+     #+BEGIN_EXAMPLE
+       ChallengeResponseAuthentication yes
+     #+END_EXAMPLE
+
+** Use userspace application to save bot info
+
+   #+BEGIN_EXAMPLE
+     coldnew@gentoo ~ $ telegram-authenticator
+     Please enter your telegram bot token:
+     239551761:AAFRfD7iN-YTC1o5od8y0IMnFbg-fWdkG4I
+     Please type '/start' to your telegram bot
+     Waiting for user type '/start' in telegram bot channel
+
+     Find chat_id: 81660412
+
+     Do you want to write setting to your config? (y/n) y
+   #+END_EXAMPLE
+
+** After your setup, this application will send info to telegram
+
+   #+ATTR_HTML: :width 50%
+   [[file:images/cx1.png]]
+
+** And ... you'll get this result
+
+   #+BEGIN_CENTER
+   #+ATTR_HTML: :width 90%
+   [[file:images/ssh1.png]]
+   #+END_CENTER
+
+* The missing part
+  :PROPERTIES:
+  :SLIDE:    segue dark quote
+  :ASIDE:    right bottom
+  :ARTICLE:  flexbox vleft auto-fadein
+  :END:
+
+  A little guide on json-c
+
+** In this project, we use json-c
+
+   - To parse json info
+
+   - Mix with curl to send json info
+
+** How to use json-c
+
+   - Our target
+
+   #+BEGIN_SRC json
+     { "ok":true,
+       "result":[ { "update_id":556578430,
+                    "message":{ "message_id":2, "chat":{ "id":81660412 }  "text":"test" }}]}
+   #+END_SRC
+
+  - Parse result
+
+  #+BEGIN_SRC c
+    json_object *root = json_tokener_parse(DATA);
+    json_object *body;
+    json_object_object_get_ex(root, "result", &body);
+
+    // print it
+    printf("result: %s\n", json_object_to_json_string(body));
+  #+END_SRC
+
+** How to user json-c on array
+
+   #+BEGIN_SRC json
+     { "result":[ {"message":{ "message_id":2, "chat":{ "id":81660412 }  "text":"test" }}]}
+   #+END_SRC
+
+  #+BEGIN_SRC c
+    json_object *root = json_tokener_parse(DATA);
+    json_object *body;
+    json_object_object_get_ex(root, "result", &body);
+    int arraylen = json_object_array_length(body);
+    json_object *jvalue;
+    for (int i = 0; i < arraylen; i++) {
+            jvalue = json_object_array_get_idx(body, i);
+
+            struct json_object *jchat;
+            json_object_object_get_ex(jmessage, "chat", &jchat);
+
+            struct json_object *jchat_id;
+            json_object_object_get_ex(jchat, "id", &jchat_id);
+    }
+  #+END_SRC
+* Thank You
+:PROPERTIES:
+:SLIDE: thank-you-slide segue
+:ASIDE: right
+:ARTICLE: flexbox vleft auto-fadein
+:END:

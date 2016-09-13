@@ -1,0 +1,11 @@
+/* code region background */
+pre.prettyprint {
+    background-color: #2e3436;
+    color: #eeeeec;
+    white-space: pre-wrap;
+}
+
+pre.example {
+    background-color: #2e3436;
+    color: #eeeeec;
+}
